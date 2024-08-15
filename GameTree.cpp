@@ -93,7 +93,7 @@ Coordinates Node::difference_between_2_states(Node& node){
 GameTree::GameTree(Node first) : first(std::make_shared<Node>(first)) {
     create_tree();
     find_best_reachable_state();
-    state_being_explred = this->first;
+    state_being_explored = this->first;
 }
 
 bool a = true;
@@ -161,24 +161,24 @@ void GameTree::find_best_reachable_state() const{
 }
 
 Coordinates GameTree::find_best_move(){
-    Player_Turn pt = state_being_explred->get_tictac().player_turn();
+    Player_Turn pt = state_being_explored->get_tictac().player_turn();
     switch(pt){
         case PLAYER_X:
-            return state_being_explred->best_play();
+            return state_being_explored->best_play();
         case PLAYER_Y:
-            return state_being_explred->best_play();
+            return state_being_explored->best_play();
     }
 }
 
 void GameTree::update_state_being_explored(TicTac& b){
-    for (const std::shared_ptr<Node>& node : state_being_explred->get_nodes()){
+    for (const std::shared_ptr<Node>& node : state_being_explored->get_nodes()){
         if (node->get_tictac() == b){
-            state_being_explred = node;
+            state_being_explored = node;
             return;
         }
     }
 }
 
 void GameTree::reset(){
-    state_being_explred = first;
+    state_being_explored = first;
 }
