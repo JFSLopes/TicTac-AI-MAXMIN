@@ -4,7 +4,7 @@
 #include <chrono>
 #include <thread>
 
-Game::Game() : state(MENU), player1(std::unique_ptr<Player>()), player2(std::unique_ptr<Player>()) {}
+Game::Game() : game_tree(std::make_shared<GameTree>(GameTree(Node(board)))) {}
 
 void Game::run(){
     while (true){
@@ -70,25 +70,26 @@ void Game::playing(){
     }
 
     Player_Turn pt = board.player_turn();
+    Coordinates c;
     if (pt == PLAYER_X){
-        Coordinates c;
         while(true){
-            c = player1->play();
+            c = player1->play(game_tree);
             if (board.is_tile_valid(c.line, c.column)) break;
             std::cout << "Invalid Tile. ";
-            std::this_thread::sleep_for(std::chrono::milliseconds(2000));
         }
-        board.play_symbol(player1->getSymbol(), c.line, c.column);
     } else {
-        Coordinates c;
         while(true){
-            c = player2->play();
+            c = player2->play(game_tree);
             if (board.is_tile_valid(c.line, c.column)) break;
             std::cout << "Invalid Tile. ";
-            std::this_thread::sleep_for(std::chrono::milliseconds(2000));
         }
-        board.play_symbol(player2->getSymbol(), c.line, c.column);
     }
+    // Fill the board and update the state in the game tree
+    board.play_symbol(pt == PLAYER_X ? player1->getSymbol() : player2->getSymbol(), c.line, c.column);
+    game_tree->update_state_being_explored(board);
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+    // Check if the game is over
     winner = board.isGameDone();
 }
 
@@ -102,6 +103,11 @@ void Game::end(){
     else if (winner == DRAW){
         std::cout << "It was a Draw\n";
     }
-    std::this_thread::sleep_for(std::chrono::milliseconds(2000));
+    // Reset variables
+    board.reset();
+    game_tree->reset();
+    winner = ON_GOING;
     state = MENU;
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(2000));
 }
